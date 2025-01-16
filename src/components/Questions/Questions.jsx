@@ -10,6 +10,8 @@ function Questions() {
   const [isCorrect, setIsCorrect] = useState(null);
   const [isAnswered, setIsAnswered] = useState(false);
   const [nextQuestion, setNextQuestion] = useState(false);
+  const [stats, setStats] = useState(0);
+  const [highScore, setHighScore] = useState(0);
 
   const getData = async () => {
     const response = await axios.get("https://opentdb.com/api.php?amount=50");
@@ -18,8 +20,18 @@ function Questions() {
   };
 
   useEffect(() => {
+    const storedHighScore = localStorage.getItem("High Score");
+    if (storedHighScore) {
+      setHighScore(storedHighScore);
+    }
     getData();
   }, []);
+
+  useEffect(() => {
+    if (highScore > 0) {
+      localStorage.setItem("High Score", highScore);
+    }
+  }, [highScore]);
 
   const decodeHtmlEntities = (string) => {
     const doc = new DOMParser().parseFromString(string, "text/html");
@@ -34,6 +46,10 @@ function Questions() {
     if (selectedOption === currentQ.correct_answer) {
       setNextQuestion(true);
       setIsCorrect(true);
+      setStats(stats + 1);
+      if (stats + 1 > highScore) {
+        setHighScore(stats + 1);
+      }
     } else {
       setIsPlaying(false);
       setIsCorrect(false);
@@ -48,6 +64,7 @@ function Questions() {
     setIsAnswered(false);
     setIsCorrect(null);
     setNextQuestion(false);
+    setStats(0);
     getData();
   };
 
@@ -105,8 +122,11 @@ function Questions() {
       </div>
       {!isPlaying && (
         <div>
-          <h3>Thanks for playing</h3>
-          <button className="questionsButton" onClick={playAgain}>Want to play again?</button>
+          <h3>Thanks for playing you got {stats} points</h3>
+          <h3>Youre High Score is {highScore}</h3>
+          <button className="questionsButton" onClick={playAgain}>
+            Want to play again?
+          </button>
         </div>
       )}
     </div>
