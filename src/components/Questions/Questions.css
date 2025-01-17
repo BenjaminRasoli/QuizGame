@@ -8,6 +8,7 @@
   max-width: 900px;
   text-align: center;
   margin: auto;
+  color: var(--thirdColor);
 }
 
 .questionsOptionsContainer {
@@ -16,9 +17,8 @@
 }
 
 .questionsButton {
-  background-color: rgb(46, 44, 44);
-  opacity: 0.7;
-  color: white;
+  background-color: var(--primaryColor);
+  color: var(--fifthColor);
   cursor: pointer;
   border: none;
   padding: 10px;
@@ -27,27 +27,25 @@
 }
 
 .questionsButton.selected {
-  background-color: black;
+  background-color: var(--secondaryColor);
   opacity: 1;
 }
 
 .questionsButton.selected.correct {
   background-color: green;
-  color: white;
 }
 
 .questionsButton.selected.incorrect {
   background-color: red;
-  color: white;
 }
 
 .questionsButton:hover:not(.selected):not(:disabled) {
-  background-color: black;
-  opacity: 1;
+  background-color: var(--secondaryColor);
+  transition: 0.3s;
 }
 
 .questionsButton:disabled {
   cursor: default;
-  background-color: rgb(46, 44, 44);
+  background-color: var(--fourthColor);
   opacity: 0.7;
 }

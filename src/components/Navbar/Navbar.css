@@ -3,7 +3,8 @@
   justify-content: space-between;
   list-style-type: none;
   padding: 30px;
-  background-color: rgb(228, 195, 195);
+  background-color: var(--primaryColor);
+  color: var(--fifthColor);
 }
 
 .navbarSocialMedia {
@@ -13,17 +14,19 @@
 }
 
 .linkedinIcon {
-  color: black;
+  color: var(--fifthColor);
 }
 
 .linkedinIcon:hover {
   color: #0a66c2;
+  transition: 0.3s;
 }
 
 .githubIcon {
-  color: black;
+  color: var(--fifthColor);
 }
 
 .githubIcon:hover {
   color: grey;
+  transition: 0.3s;
 }
