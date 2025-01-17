@@ -8,21 +8,18 @@ import { motion } from "motion/react";
 function Questions() {
   const [questions, setQuestions] = useState([]);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(true);
   const [selectedOption, setSelectedOption] = useState("");
   const [isCorrect, setIsCorrect] = useState(null);
   const [isAnswered, setIsAnswered] = useState(false);
   const [nextQuestion, setNextQuestion] = useState(false);
   const [startPlaying, setStartPlaying] = useState(false);
-  // const [stats, setStats] = useState(0);
-  // const [highScore, setHighScore] = useState(0);
   const [error, setError] = useState("");
   const { stats, setStats } = useStatsStore();
   const { highScore, setHighScore } = useHighScoreStore();
 
   const getData = async () => {
     try {
-      const response = await axios.get("https://opentdb.com/api.php?amount=50");
+      const response = await axios.get("https://opentdb.com/api.php?amount=10");
       setQuestions(response.data.results);
     } catch (error) {
       setError("Failed to fetch questions. Please try again later.");
@@ -54,16 +51,15 @@ function Questions() {
 
   const submitAnswer = () => {
     if (selectedOption === currentQ.correct_answer) {
-      setNextQuestion(true);
       setIsCorrect(true);
       setStats(stats + 1);
       if (stats + 1 > highScore) {
         setHighScore(stats + 1);
       }
     } else {
-      setIsPlaying(false);
       setIsCorrect(false);
     }
+    setNextQuestion(true);
     setSelectedOption("");
     setIsAnswered(true);
   };
@@ -72,16 +68,16 @@ function Questions() {
     setStartPlaying(true);
   };
 
-  const randomNumber = Math.floor(Math.random() * 51);
+  const randomNumber = Math.floor(Math.random() * 11);
 
   const playAgain = () => {
-    setIsPlaying(true);
     setSelectedOption("");
-    setCurrentQuestion(randomNumber);
+    setCurrentQuestion(0);
     setIsAnswered(false);
     setIsCorrect(null);
     setNextQuestion(false);
     setStats(0);
+    getData();
   };
 
   const nextQuestionFunction = () => {
@@ -101,7 +97,7 @@ function Questions() {
     );
   }
 
-  if (stats === 50) {
+  if (currentQuestion === 10) {
     return (
       <>
         <div className="questionsContainer">
@@ -123,6 +119,11 @@ function Questions() {
 
   return (
     <div className="questionsContainer">
+      {startPlaying && (
+        <div className="numberOfQuestion">
+          {currentQuestion + 1}/{questions.length}
+        </div>
+      )}
       {startPlaying ? (
         <div>
           <h1>{decodeHtmlEntities(currentQ.question)}</h1>
@@ -141,7 +142,7 @@ function Questions() {
           : ""
       }
       ${selectedOption === option ? "selected" : ""}`}
-                disabled={!isPlaying || isAnswered}
+                disabled={isAnswered}
               >
                 {decodeHtmlEntities(option)}
               </button>
@@ -157,7 +158,7 @@ function Questions() {
               }}
               onClick={submitAnswer}
               className="questionsButtonSubmit"
-              disabled={!isPlaying || isAnswered || !selectedOption}
+              disabled={isAnswered || !selectedOption}
             >
               Submit Answer
             </motion.button>
@@ -188,33 +189,20 @@ function Questions() {
           className="questionsButtonStart"
           onClick={startToPlay}
         >
-          Start to play quiz
+          Press to start quiz
         </motion.button>
       )}
-      {!isPlaying && (
-        <div>
+      {isAnswered &&
+        (isCorrect ? (
+          <div>
+            <h2>Correct Answer!</h2>
+          </div>
+        ) : (
           <h2>
-            The correct answer was {decodeHtmlEntities(currentQ.correct_answer)}
+            The correct answer was{" "}
+            {decodeHtmlEntities(currentQ?.correct_answer)}
           </h2>
-          <motion.button
-            animate={{
-              scale: [1, 1.05, 1],
-            }}
-            transition={{
-              repeat: Infinity,
-            }}
-            className="questionsButton"
-            onClick={playAgain}
-          >
-            Want to play again?
-          </motion.button>
-        </div>
-      )}
-      {isCorrect && (
-        <div>
-          <h2>Correct Answer!</h2>
-        </div>
-      )}
+        ))}
     </div>
   );
 }
