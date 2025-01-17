@@ -1,6 +1,7 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import "./Questions.css";
+import { MoonLoader } from "react-spinners";
 
 function Questions() {
   const [questions, setQuestions] = useState([]);
@@ -16,7 +17,6 @@ function Questions() {
   const getData = async () => {
     const response = await axios.get("https://opentdb.com/api.php?amount=50");
     setQuestions(response.data.results);
-    console.log(response.data.results);
   };
 
   useEffect(() => {
@@ -57,15 +57,16 @@ function Questions() {
     setIsAnswered(true);
   };
 
+  const randomNumber = Math.floor(Math.random() * 51);
+
   const playAgain = () => {
     setIsPlaying(true);
     setSelectedOption("");
-    setCurrentQuestion(0);
+    setCurrentQuestion(randomNumber);
     setIsAnswered(false);
     setIsCorrect(null);
     setNextQuestion(false);
     setStats(0);
-    getData();
   };
 
   const nextQuestionFunction = () => {
@@ -77,7 +78,26 @@ function Questions() {
   };
 
   if (questions.length === 0) {
-    return <div>loading...</div>;
+    return (
+      <div className="questionsContainer">
+        <MoonLoader />
+      </div>
+    );
+  }
+
+  if (stats === 50) {
+    return (
+      <>
+        <div className="questionsContainer">
+          <h2>Congratulations you completed all questions!</h2>
+          <button className="questionsButton" onClick={playAgain}>
+            Want to play again?
+          </button>
+          <h3>Thanks for playing you got {stats} points</h3>
+          <h3>Youre High Score is {highScore}</h3>
+        </div>
+      </>
+    );
   }
 
   const currentQ = questions[currentQuestion];
@@ -86,6 +106,8 @@ function Questions() {
   return (
     <div className="questionsContainer">
       <div>
+        <h2>High Score {highScore}</h2>
+        <h4>Currenct Score {stats}</h4>
         <h1>{decodeHtmlEntities(currentQ.question)}</h1>
         <div className="questionsOptionsContainer">
           {options.map((option) => (
@@ -124,6 +146,9 @@ function Questions() {
         <div>
           <h3>Thanks for playing you got {stats} points</h3>
           <h3>Youre High Score is {highScore}</h3>
+          <h4>
+            Correct answer is {decodeHtmlEntities(currentQ.correct_answer)}
+          </h4>
           <button className="questionsButton" onClick={playAgain}>
             Want to play again?
           </button>
