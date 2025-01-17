@@ -1,9 +1,41 @@
 * {
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 body {
-  background-color: grey;
-  font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  background-image: url("./assets/QuizAppBackgroundImage.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  font-family: "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+main {
+  flex-grow: 1;
+}
+
+:root {
+  --primaryColor: #2b4475;
+  --secondaryColor: #b447f8;
+  --thirdColor: #000000;
+  --fourthColor: #4b4a4a;
+  --fifthColor: #fffcfc;
 }
