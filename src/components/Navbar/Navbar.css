@@ -1,0 +1,29 @@
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  list-style-type: none;
+  padding: 30px;
+  background-color: rgb(228, 195, 195);
+}
+
+.navbarSocialMedia {
+  display: flex;
+  list-style-type: none;
+  gap: 10px;
+}
+
+.linkedinIcon {
+  color: black;
+}
+
+.linkedinIcon:hover {
+  color: #0a66c2;
+}
+
+.githubIcon {
+  color: black;
+}
+
+.githubIcon:hover {
+  color: grey;
+}
