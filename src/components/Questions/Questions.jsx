@@ -13,10 +13,15 @@ function Questions() {
   const [nextQuestion, setNextQuestion] = useState(false);
   const [stats, setStats] = useState(0);
   const [highScore, setHighScore] = useState(0);
+  const [error, setError] = useState("");
 
   const getData = async () => {
-    const response = await axios.get("https://opentdb.com/api.php?amount=50");
-    setQuestions(response.data.results);
+    try {
+      const response = await axios.get("https://opentdb.com/api.php?amount=50");
+      setQuestions(response.data.results);
+    } catch (error) {
+      setError("Failed to fetch questions. Please try again later.");
+    }
   };
 
   useEffect(() => {
@@ -81,6 +86,7 @@ function Questions() {
     return (
       <div className="questionsContainer">
         <MoonLoader />
+        {error}
       </div>
     );
   }
