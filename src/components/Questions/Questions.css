@@ -134,8 +134,8 @@
 }
 
 .questionsButton.selected {
-  background-color: var(--fifthColor);
-  color: var(--thirdColor);
+  background-color: var(--thirdColor);
+  color: var(--fifthColor);
   opacity: 1;
 }
 

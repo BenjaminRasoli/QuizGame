@@ -20,6 +20,8 @@ function Questions() {
   const [error, setError] = useState("");
   const { stats, setStats } = useStatsStore();
   const { highScore, setHighScore } = useHighScoreStore();
+  const [shuffledOptions, setShuffledOptions] = useState([]);
+
   const { currentQuestion, setCurrentQuestion } = useCurrentQuestionStore();
 
   const getData = async () => {
@@ -76,7 +78,7 @@ function Questions() {
 
   const startToPlay = () => {
     setStartPlaying(true);
-    setCurrentQuestion(1);
+    setCurrentQuestion(0);
   };
 
   const playAgain = async () => {
@@ -115,6 +117,18 @@ function Questions() {
     }
   }, [quizTimer, startPlaying, isAnswered]);
 
+  const currentQ = questions && questions[currentQuestion];
+
+  useEffect(() => {
+    if (currentQ) {
+      const options = [...currentQ.incorrect_answers, currentQ.correct_answer];
+      options.sort(() => Math.random() - 0.5);
+      setShuffledOptions(options);
+    } else {
+      setShuffledOptions([]);
+    }
+  }, [currentQ]);
+
   if (startPlaying && questions.length === 0) {
     return (
       <div className="questionsContainer">
@@ -139,11 +153,6 @@ function Questions() {
     );
   }
 
-  const currentQ = questions && questions[currentQuestion];
-  const options = currentQ
-    ? [...currentQ.incorrect_answers, currentQ.correct_answer]
-    : [];
-
   return (
     <>
       <div className="questionsContainer">
@@ -157,7 +166,7 @@ function Questions() {
             <div className="quizMainContentQuestionAndOptions">
               <h1>{decodeHtmlEntities(currentQ.question)}</h1>
               <div className="questionsOptionsContainer">
-                {options.map((option) => (
+                {shuffledOptions.map((option) => (
                   <button
                     onClick={() => selectedOptionFunction(option)}
                     key={option}
