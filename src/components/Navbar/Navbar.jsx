@@ -1,16 +1,24 @@
 import React from "react";
 import { FaGithub, FaLinkedin } from "react-icons/fa";
 import "./Navbar.css";
-import { useHighScoreStore, useStatsStore } from "../../Store/Store";
+import {
+  useCurrentQuestionStore,
+  useHighScoreStore,
+  useStatsStore,
+} from "../../Store/Store";
 
 function Navbar() {
   const { stats } = useStatsStore();
   const { highScore } = useHighScoreStore();
+  const { currentQuestion } = useCurrentQuestionStore();
 
   return (
     <ul className="navbar">
       <li>HighScore: {highScore}</li>
-      <li>CurrentScore: {stats}</li>
+      <ul>
+        <li>CurrentScore: {stats}</li>
+        <li>Question: {currentQuestion}/10</li>
+      </ul>
       <ul className="navbarSocialMedia">
         <li>
           <a

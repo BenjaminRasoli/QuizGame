@@ -2,20 +2,25 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import "./Questions.css";
 import { MoonLoader } from "react-spinners";
-import { useStatsStore, useHighScoreStore } from "../../Store/Store";
+import {
+  useStatsStore,
+  useHighScoreStore,
+  useCurrentQuestionStore,
+} from "../../Store/Store";
 import { motion } from "motion/react";
 
 function Questions() {
   const [questions, setQuestions] = useState([]);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedOption, setSelectedOption] = useState("");
   const [isCorrect, setIsCorrect] = useState(null);
   const [isAnswered, setIsAnswered] = useState(false);
   const [nextQuestion, setNextQuestion] = useState(false);
   const [startPlaying, setStartPlaying] = useState(false);
+  const [quizTimer, setQuizTimer] = useState(10);
   const [error, setError] = useState("");
   const { stats, setStats } = useStatsStore();
   const { highScore, setHighScore } = useHighScoreStore();
+  const { currentQuestion, setCurrentQuestion } = useCurrentQuestionStore();
 
   const getData = async () => {
     try {
@@ -27,11 +32,16 @@ function Questions() {
   };
 
   useEffect(() => {
+    if (startPlaying) {
+      getData();
+    }
+  }, [startPlaying]);
+
+  useEffect(() => {
     const storedHighScore = localStorage.getItem("High Score");
     if (storedHighScore) {
       setHighScore(storedHighScore);
     }
-    getData();
   }, []);
 
   useEffect(() => {
@@ -66,18 +76,18 @@ function Questions() {
 
   const startToPlay = () => {
     setStartPlaying(true);
+    setCurrentQuestion(1);
   };
 
-  const randomNumber = Math.floor(Math.random() * 11);
-
-  const playAgain = () => {
-    setSelectedOption("");
+  const playAgain = async () => {
+    await getData();
     setCurrentQuestion(0);
+    setQuizTimer(10);
+    setSelectedOption("");
     setIsAnswered(false);
     setIsCorrect(null);
     setNextQuestion(false);
     setStats(0);
-    getData();
   };
 
   const nextQuestionFunction = () => {
@@ -86,27 +96,44 @@ function Questions() {
     setIsAnswered(false);
     setIsCorrect(null);
     setNextQuestion(false);
+    setQuizTimer(10);
   };
+
+  useEffect(() => {
+    if (startPlaying && quizTimer > 0 && !isAnswered) {
+      const interval = setInterval(() => {
+        setQuizTimer((prevTime) => prevTime - 1);
+      }, 1000);
+
+      return () => clearInterval(interval);
+    }
+
+    if (quizTimer === 0 && !isAnswered) {
+      setSelectedOption("");
+      setIsAnswered(true);
+      setNextQuestion(true);
+    }
+  }, [quizTimer, startPlaying, isAnswered]);
 
   if (startPlaying && questions.length === 0) {
     return (
       <div className="questionsContainer">
         <MoonLoader />
-        {error}
+        <span className="errorText">{error}</span>
       </div>
     );
   }
-
   if (currentQuestion === 10) {
     return (
       <>
         <div className="questionsContainer">
-          <h2>Congratulations you completed all questions!</h2>
-          <button className="questionsButton" onClick={playAgain}>
-            Want to play again?
-          </button>
-          <h3>Thanks for playing you got {stats} points</h3>
-          <h3>Youre High Score is {highScore}</h3>
+          <div className="endScreenContainer">
+            <h2>Thanks for playing you got {stats} points</h2>
+            <h2>Youre High Score is {highScore}</h2>
+            <button className="questionsButton" onClick={playAgain}>
+              Want to play again?
+            </button>
+          </div>
         </div>
       </>
     );
@@ -118,22 +145,23 @@ function Questions() {
     : [];
 
   return (
-    <div className="questionsContainer">
-      {startPlaying && (
-        <div className="numberOfQuestion">
-          {currentQuestion + 1}/{questions.length}
-        </div>
-      )}
-      {startPlaying ? (
-        <div>
-          <h1>{decodeHtmlEntities(currentQ.question)}</h1>
-          <h3>Select an option</h3>
-          <div className="questionsOptionsContainer">
-            {options.map((option) => (
-              <button
-                onClick={() => selectedOptionFunction(option)}
-                key={option}
-                className={`questionsButton 
+    <>
+      <div className="questionsContainer">
+        {startPlaying && (
+          <div className="SecondsLeft">
+            <h2>{quizTimer} Seconds left</h2>
+          </div>
+        )}
+        {startPlaying ? (
+          <div className="quizMainContent">
+            <div className="quizMainContentQuestionAndOptions">
+              <h1>{decodeHtmlEntities(currentQ.question)}</h1>
+              <div className="questionsOptionsContainer">
+                {options.map((option) => (
+                  <button
+                    onClick={() => selectedOptionFunction(option)}
+                    key={option}
+                    className={`questionsButton 
       ${
         isAnswered
           ? option === currentQ.correct_answer
@@ -142,68 +170,74 @@ function Questions() {
           : ""
       }
       ${selectedOption === option ? "selected" : ""}`}
-                disabled={isAnswered}
+                    disabled={isAnswered}
+                  >
+                    {decodeHtmlEntities(option)}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {selectedOption && (
+              <motion.button
+                animate={{
+                  scale: [1, 1.05, 1],
+                }}
+                transition={{
+                  repeat: Infinity,
+                }}
+                onClick={submitAnswer}
+                className="questionsButtonSubmit"
+                disabled={isAnswered || !selectedOption}
               >
-                {decodeHtmlEntities(option)}
-              </button>
-            ))}
-          </div>
-          {selectedOption && (
-            <motion.button
-              animate={{
-                scale: [1, 1.05, 1],
-              }}
-              transition={{
-                repeat: Infinity,
-              }}
-              onClick={submitAnswer}
-              className="questionsButtonSubmit"
-              disabled={isAnswered || !selectedOption}
-            >
-              Submit Answer
-            </motion.button>
-          )}
-          {nextQuestion && (
-            <motion.button
-              animate={{
-                scale: [1, 1.05, 1],
-              }}
-              transition={{
-                repeat: Infinity,
-              }}
-              onClick={nextQuestionFunction}
-              className="questionsButton"
-            >
-              Next Question
-            </motion.button>
-          )}
-        </div>
-      ) : (
-        <motion.button
-          animate={{
-            scale: [1, 1.05, 1],
-          }}
-          transition={{
-            repeat: Infinity,
-          }}
-          className="questionsButtonStart"
-          onClick={startToPlay}
-        >
-          Press to start quiz
-        </motion.button>
-      )}
-      {isAnswered &&
-        (isCorrect ? (
-          <div>
-            <h2>Correct Answer!</h2>
+                Submit Answer
+              </motion.button>
+            )}
+            {nextQuestion && (
+              <motion.button
+                animate={{
+                  scale: [1, 1.05, 1],
+                }}
+                transition={{
+                  repeat: Infinity,
+                }}
+                onClick={nextQuestionFunction}
+                className="questionsButton"
+              >
+                Next Question
+              </motion.button>
+            )}
+            {isAnswered &&
+              (isCorrect ? (
+                <div>
+                  <h2 className="correctAnswer">Correct Answer!</h2>
+                </div>
+              ) : (
+                <h2>
+                  The correct answer was
+                  <span className="correctAnswer">
+                    {" "}
+                    {decodeHtmlEntities(currentQ?.correct_answer)}
+                  </span>
+                </h2>
+              ))}
           </div>
         ) : (
-          <h2>
-            The correct answer was{" "}
-            {decodeHtmlEntities(currentQ?.correct_answer)}
-          </h2>
-        ))}
-    </div>
+          <motion.button
+            animate={{
+              scale: [1, 1.05, 1],
+            }}
+            transition={{
+              repeat: Infinity,
+            }}
+            className="questionsButtonStart"
+            onClick={startToPlay}
+          >
+            Press to start quiz
+          </motion.button>
+        )}
+      </div>
+    </>
   );
 }
 
