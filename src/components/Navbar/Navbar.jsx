@@ -2,7 +2,7 @@ import React from "react";
 import { FaGithub, FaLinkedin } from "react-icons/fa";
 import "./Navbar.css";
 import {
-  useCurrentQuestionStore,
+  useCurrentQuestionDisplayValueStore,
   useHighScoreStore,
   useStatsStore,
 } from "../../Store/Store";
@@ -10,14 +10,13 @@ import {
 function Navbar() {
   const { stats } = useStatsStore();
   const { highScore } = useHighScoreStore();
-  const { currentQuestion } = useCurrentQuestionStore();
-
+  const { currentQuestionDisplayValue } = useCurrentQuestionDisplayValueStore();
   return (
     <ul className="navbar">
       <li>HighScore: {highScore}</li>
       <ul>
         <li>CurrentScore: {stats}</li>
-        <li>Question: {currentQuestion}/10</li>
+        <li>Question: {currentQuestionDisplayValue}/10</li>
       </ul>
       <ul className="navbarSocialMedia">
         <li>

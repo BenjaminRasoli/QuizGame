@@ -5,7 +5,7 @@ import { MoonLoader } from "react-spinners";
 import {
   useStatsStore,
   useHighScoreStore,
-  useCurrentQuestionStore,
+  useCurrentQuestionDisplayValueStore,
 } from "../../Store/Store";
 import { motion } from "motion/react";
 
@@ -18,11 +18,12 @@ function Questions() {
   const [startPlaying, setStartPlaying] = useState(false);
   const [quizTimer, setQuizTimer] = useState(10);
   const [error, setError] = useState("");
+  const [shuffledOptions, setShuffledOptions] = useState([]);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
   const { stats, setStats } = useStatsStore();
   const { highScore, setHighScore } = useHighScoreStore();
-  const [shuffledOptions, setShuffledOptions] = useState([]);
-
-  const { currentQuestion, setCurrentQuestion } = useCurrentQuestionStore();
+  const { currentQuestionDisplayValue, setCurrentQuestionDisplayValue } =
+    useCurrentQuestionDisplayValueStore();
 
   const getData = async () => {
     try {
@@ -79,11 +80,13 @@ function Questions() {
   const startToPlay = () => {
     setStartPlaying(true);
     setCurrentQuestion(0);
+    setCurrentQuestionDisplayValue(1);
   };
 
   const playAgain = async () => {
     await getData();
     setCurrentQuestion(0);
+    setCurrentQuestionDisplayValue(1);
     setQuizTimer(10);
     setSelectedOption("");
     setIsAnswered(false);
@@ -94,11 +97,16 @@ function Questions() {
 
   const nextQuestionFunction = () => {
     setCurrentQuestion(currentQuestion + 1);
+    setCurrentQuestionDisplayValue(currentQuestionDisplayValue + 1);
     setSelectedOption("");
     setIsAnswered(false);
     setIsCorrect(null);
     setNextQuestion(false);
     setQuizTimer(10);
+  };
+
+  const lastQuestionFunction = () => {
+    setCurrentQuestion(currentQuestion + 1);
   };
 
   useEffect(() => {
@@ -117,7 +125,7 @@ function Questions() {
     }
   }, [quizTimer, startPlaying, isAnswered]);
 
-  const currentQ = questions && questions[currentQuestion];
+  const currentQ = questions[currentQuestion];
 
   useEffect(() => {
     if (currentQ) {
@@ -156,21 +164,20 @@ function Questions() {
   return (
     <>
       <div className="questionsContainer">
-        {startPlaying && (
-          <div className="SecondsLeft">
-            <h2>{quizTimer} Seconds left</h2>
-          </div>
-        )}
         {startPlaying ? (
-          <div className="quizMainContent">
-            <div className="quizMainContentQuestionAndOptions">
-              <h1>{decodeHtmlEntities(currentQ.question)}</h1>
-              <div className="questionsOptionsContainer">
-                {shuffledOptions.map((option) => (
-                  <button
-                    onClick={() => selectedOptionFunction(option)}
-                    key={option}
-                    className={`questionsButton 
+          <>
+            <div className="SecondsLeft">
+              <h2>{quizTimer} Seconds left</h2>
+            </div>
+            <div className="quizMainContent">
+              <div className="quizMainContentQuestionAndOptions">
+                <h1>{decodeHtmlEntities(currentQ.question)}</h1>
+                <div className="questionsOptionsContainer">
+                  {shuffledOptions.map((option) => (
+                    <button
+                      onClick={() => selectedOptionFunction(option)}
+                      key={option}
+                      className={`questionsButton 
       ${
         isAnswered
           ? option === currentQ.correct_answer
@@ -179,58 +186,74 @@ function Questions() {
           : ""
       }
       ${selectedOption === option ? "selected" : ""}`}
-                    disabled={isAnswered}
-                  >
-                    {decodeHtmlEntities(option)}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {selectedOption && (
-              <motion.button
-                animate={{
-                  scale: [1, 1.05, 1],
-                }}
-                transition={{
-                  repeat: Infinity,
-                }}
-                onClick={submitAnswer}
-                className="questionsButtonSubmit"
-                disabled={isAnswered || !selectedOption}
-              >
-                Submit Answer
-              </motion.button>
-            )}
-            {nextQuestion && (
-              <motion.button
-                animate={{
-                  scale: [1, 1.05, 1],
-                }}
-                transition={{
-                  repeat: Infinity,
-                }}
-                onClick={nextQuestionFunction}
-                className="questionsButton"
-              >
-                Next Question
-              </motion.button>
-            )}
-            {isAnswered &&
-              (isCorrect ? (
-                <div>
-                  <h2 className="correctAnswer">Correct Answer!</h2>
+                      disabled={isAnswered}
+                    >
+                      {decodeHtmlEntities(option)}
+                    </button>
+                  ))}
                 </div>
+              </div>
+
+              {selectedOption && (
+                <motion.button
+                  animate={{
+                    scale: [1, 1.05, 1],
+                  }}
+                  transition={{
+                    repeat: Infinity,
+                  }}
+                  onClick={submitAnswer}
+                  className="questionsButtonSubmit"
+                  disabled={isAnswered || !selectedOption}
+                >
+                  Submit Answer
+                </motion.button>
+              )}
+              {isAnswered && currentQuestionDisplayValue === 10 ? (
+                <motion.button
+                  animate={{
+                    scale: [1, 1.05, 1],
+                  }}
+                  transition={{
+                    repeat: Infinity,
+                  }}
+                  onClick={lastQuestionFunction}
+                  className="questionsButton"
+                >
+                  Finish Quiz
+                </motion.button>
               ) : (
-                <h2>
-                  The correct answer was
-                  <span className="correctAnswer">
-                    {" "}
-                    {decodeHtmlEntities(currentQ?.correct_answer)}
-                  </span>
-                </h2>
-              ))}
-          </div>
+                nextQuestion && (
+                  <motion.button
+                    animate={{
+                      scale: [1, 1.05, 1],
+                    }}
+                    transition={{
+                      repeat: Infinity,
+                    }}
+                    onClick={nextQuestionFunction}
+                    className="questionsButton"
+                  >
+                    Next Question
+                  </motion.button>
+                )
+              )}
+              {isAnswered &&
+                (isCorrect ? (
+                  <div>
+                    <h2 className="correctAnswer">Correct Answer!</h2>
+                  </div>
+                ) : (
+                  <h2>
+                    The correct answer was
+                    <span className="correctAnswer">
+                      {" "}
+                      {decodeHtmlEntities(currentQ?.correct_answer)}
+                    </span>
+                  </h2>
+                ))}
+            </div>
+          </>
         ) : (
           <motion.button
             animate={{

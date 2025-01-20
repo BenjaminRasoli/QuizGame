@@ -10,8 +10,10 @@ export const useHighScoreStore = create((set) => ({
   setHighScore: (newHighScore) => set(() => ({ highScore: newHighScore })),
 }));
 
-export const useCurrentQuestionStore = create((set) => ({
-  currentQuestion: 0,
-  setCurrentQuestion: (newcurrentQuestion) =>
-    set(() => ({ currentQuestion: newcurrentQuestion })),
+export const useCurrentQuestionDisplayValueStore = create((set) => ({
+  currentQuestionDisplayValue: 0,
+  setCurrentQuestionDisplayValue: (newcurrentQuestionDisplayValue) =>
+    set(() => ({
+      currentQuestionDisplayValue: newcurrentQuestionDisplayValue,
+    })),
 }));
